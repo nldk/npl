@@ -1,0 +1,8 @@
+ptl "hallo wereld";
+sav text,10;
+ptl text,?;
+set text,15;
+sav newText,"Vince vlerick";
+ptl newText,?;
+mov newText,text;
+ptl text,?;
