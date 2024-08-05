@@ -1,0 +1,15 @@
+sav rand,0;
+rnd rand,0,100;
+ptl rand,?;
+ptl guess the number;
+sav input,0;
+usi input;
+dif input,>,rand,10;
+ptl smaller;
+jmp 4;
+dif input,<,rand,13;
+ptl bigger;
+jmp 4;
+dif input,==,rand,4;
+ptl good;
+jmp 2;
