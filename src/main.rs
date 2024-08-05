@@ -33,9 +33,9 @@ fn execute() {
 }
 
 fn rfile() -> String {
-    //let args: Vec<String> = env::args().collect();
-    //let pathStr:String = args[1].clone();
-    let pathStr: String = "test.npl".to_string();
+    let args: Vec<String> = env::args().collect();
+    let pathStr:String = args[1].clone();
+    //let pathStr: String = "test.npl".to_string();
     let path = Path::new(&pathStr);
     let mut data_file = File::open(path).unwrap();
     let mut file_content = String::new();

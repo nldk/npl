@@ -1,0 +1,5 @@
+ptl what is your name?;
+sav name,0;
+usi name;
+pt your name is ;
+ptl name,?;
