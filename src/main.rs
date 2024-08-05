@@ -2,7 +2,7 @@ use std::fs::File;
 use std::{env, io};
 use std::io::Read;
 use std::path::Path;
-use crate::instructions::{mov, set};
+use crate::instructions::{mov, set, usi};
 
 mod instructions;
 
@@ -118,7 +118,8 @@ impl Line {
                     }
                 }
             }
-            _ => {
+            "usi"=>{usi(self.opperhand[0].to_string(),program)},
+            _=>{
                 println!("error:invalid instruction");
                 panic!("e{}", self.instruction)
             }

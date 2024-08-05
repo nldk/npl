@@ -1,3 +1,4 @@
+use std::io;
 use crate::{Line, Program, Var};
 
 
@@ -46,8 +47,15 @@ impl Line {
         }
     }
 }
+pub fn usi(varTS:String,mut p: &mut Program){
+    let mut input = String::new();
+    io::stdin().read_line(&mut input);
+    let inputTrimd = input.trim();
+    set(&varTS, &inputTrimd.to_string(), &mut p);
+}
 impl Program{
     pub fn jmp(&mut self, place:u64){
-        self.pp = place;
+        self.pp = place-1
+        ;
     }
 }
