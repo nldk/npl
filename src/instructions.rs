@@ -9,7 +9,7 @@ pub fn set( nameTF: &String, valueTS: &String, mut p: &mut Program) {
             return;
         }
     }
-    panic!("variable not found at line {}. maybe you didnt declare the variable",p.pp)
+    //panic!("variable not found at line {}. maybe you didnt declare the variable",p.pp)
 }
 pub fn get( nameTF: &String, mut p: &Program) -> String {
     let mut value = String::new();
@@ -49,13 +49,50 @@ impl Line {
 }
 pub fn usi(varTS:String,mut p: &mut Program){
     let mut input = String::new();
-    io::stdin().read_line(&mut input);
+    io::stdin().read_line(&mut input).unwrap();
     let inputTrimd = input.trim();
     set(&varTS, &inputTrimd.to_string(), &mut p);
 }
+use rand::Rng;
+pub fn rnd(varTS:String,begin:i64,end:i64,p: &mut Program){
+    let mut rng = rand::thread_rng();
+    set(&varTS,&rng.gen_range(begin..end).to_string(),p);
+}
+pub fn dif(conr:String,op:String,conl:String,tj:u64, p:&mut Program){
+    match op.as_str() {
+        "=="=>{if get(&conr,&p) != get(&conl,&p){
+            p.pp = tj-1;
+        }},
+        "!="=>{if get(&conr,&p) == get(&conl,&p){
+            p.pp = tj -1;
+        }},
+        "<"=>{
+            let conln = get(&conl,&p).parse::<i64>().expect("NOT A NUMBER");
+            let conrn = get(&conr,&p).parse::<i64>().expect("NOT A NUMBER");
+            if conrn > conln {
+                p.pp = tj-1;
+            }},
+        ">"=>{
+            let conln = get(&conl,&p).parse::<i64>().expect("NOT A NUMBER");
+            let conrn = get(&conr,&p).parse::<i64>().expect("NOT A NUMBER");
+            if conrn < conln {
+            p.pp = tj-1;
+        }},
+        _ => {}
+    }
+}
+pub fn add(varTS:String,valTA:String,  p:&mut Program){
+    let valueTA = valTA.parse::<i64>().expect("NOT A NUMBER");
+    let valueO = get(&varTS,&p).parse::<i64>().expect("NOT A NUMBER");
+    set(&varTS,&(valueTA+valueO).to_string(),p)
+}
+pub fn sub(varTS:String,valTS:String, p:&mut Program){
+    let valueTS = valTS.parse::<i64>().expect("NOT A NUMBER");
+    let valueO = get(&varTS,&p).parse::<i64>().expect("NOT A NUMBER");
+    set(&varTS,&(valueO-valueTS).to_string(),p)
+}
 impl Program{
     pub fn jmp(&mut self, place:u64){
-        self.pp = place-1
-        ;
+        self.pp = place-1;
     }
 }

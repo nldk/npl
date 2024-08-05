@@ -2,7 +2,7 @@ use std::fs::File;
 use std::{env, io};
 use std::io::Read;
 use std::path::Path;
-use crate::instructions::{mov, set, usi};
+use crate::instructions::{add, dif, mov, rnd, set, sub, usi};
 
 mod instructions;
 
@@ -35,7 +35,7 @@ fn execute() {
 fn rfile() -> String {
     //let args: Vec<String> = env::args().collect();
     //let pathStr:String = args[1].clone();
-    let pathStr: String = "test/test.npl".to_string();
+    let pathStr: String = "test.npl".to_string();
     let path = Path::new(&pathStr);
     let mut data_file = File::open(path).unwrap();
     let mut file_content = String::new();
@@ -71,6 +71,7 @@ fn parch(file: String, mut program: &mut Program) {
         };
         parchetFile.push(line);
     }
+    println!("{:?}", parchetFile);
     program.lines = parchetFile;
 }
 
@@ -119,9 +120,13 @@ impl Line {
                 }
             }
             "usi"=>{usi(self.opperhand[0].to_string(),program)},
+            "rnd"=>{rnd(self.opperhand[0].to_string(),self.opperhand[1].parse::<i64>().expect("NOT A NUMBER"),self.opperhand[2].parse::<i64>().expect("NOT A NUMBER"),program)},
+            "add"=>{add(self.opperhand[0].to_string(),self.opperhand[1].to_string(),program)},
+            "sub"=>{sub(self.opperhand[0].to_string(),self.opperhand[1].to_string(),program)},
+            "dif"=>{dif(self.opperhand[0].to_string(), self.opperhand[1].to_string(), self.opperhand[2].to_string(), self.opperhand[3].to_string().parse::<u64>().expect("NOT A NUMBER"), program) }
             _=>{
                 println!("error:invalid instruction");
-                panic!("e{}", self.instruction)
+                panic!("e:{}", self.instruction)
             }
         };
     }
