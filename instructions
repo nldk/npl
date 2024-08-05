@@ -1,6 +1,11 @@
-ptl
-pt
-sav
-set
-mov
-jmp
+ptl 1,2
+pt  1,2
+sav 2
+set 2
+mov 2
+jmp 1
+usi 1
+rnd 3
+dif 4
+sub 2
+add 2
