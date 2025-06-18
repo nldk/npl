@@ -2,7 +2,7 @@ use std::fs::File;
 use std::{env, io};
 use std::io::Read;
 use std::path::Path;
-use crate::instructions::{add, dif, end, mov, rnd, set, sub, usi};
+use crate::instructions::{end};
 
 mod instructions;
 
@@ -16,10 +16,19 @@ fn execute() {
         lines: Vec::new(),
         vars: Vec::new(),
         end: false,
+        debug: false,
     };
     let file = rfile();
     let mut begin = true;
-    parch(file, &mut program);
+    let args: Vec<String> = env::args().collect();
+    let mut debugS="".to_string();
+    let mut debug = false;
+    if args.len() > 2 {
+        debugS = args[2].clone();
+        debug = debugS == "-d";
+    }
+    program.debug=debug;
+    program = parch(file, &program,debug);
     while program.pp < (program.lines.len() - 1) as u64 && !program.end{
         if !begin {
             program.pp += 1;
@@ -28,7 +37,7 @@ fn execute() {
             instruction: program.lines[program.pp as usize].instruction.clone(),
             opperhand: program.lines[program.pp as usize].opperhand.clone(),
         };
-        line.perform(&mut program);
+        line.perform(program.clone());
         begin = false;
     }
 }
@@ -44,7 +53,7 @@ fn rfile() -> String {
     return file_content;
 }
 
-fn parch(file: String, mut program: &mut Program) {
+fn parch(file: String, program: &Program,debug:bool)->Program {
     let splitedFile = file.trim().split(';');
     let mut parchFile: Vec<&str> = splitedFile.collect();
     parchFile.pop();
@@ -72,66 +81,75 @@ fn parch(file: String, mut program: &mut Program) {
         };
         parchetFile.push(line);
     }
-    println!("{:?}", parchetFile);
-    program.lines = parchetFile;
+    if debug{
+        println!("{:?}", parchetFile);
+    }
+    let mut p = program.clone();
+    p.lines = parchetFile;
+    return p;
 }
-
+#[derive(Clone)]
 struct Program {
     pp: u64,
     lines: Vec<Line>,
     vars: Vec<Var>,
     end: bool,
+    debug: bool,
 }
 
+#[derive(Clone)]
 struct Var {
     name: String,
     value: String,
 }
 
 #[derive(Debug)]
+#[derive(Clone)]
 struct Line {
     instruction: String,
     opperhand: Vec<String>,
 }
-
-fn newVar(nameN: &String, valueN: &String, p: &mut Program) {
-    for i in &mut p.vars {
-        if &i.name == nameN {
-            set(nameN,valueN,p);
-            return;
+impl Program {
+    fn newVar(mut self, nameN: &String, valueN: &String,) {
+        for i in &mut self.vars {
+            if &i.name == nameN {
+                self.set(nameN,valueN);
+                return;
+            }
         }
+        self.vars.push(
+            Var {
+                name: nameN.to_string(),
+                value: valueN.to_string(),
+            }
+        );
     }
-    p.vars.push(
-        Var {
-            name: nameN.to_string(),
-            value: valueN.to_string(),
-        }
-    );
 }
 
+
 impl Line {
-    fn perform(&self, program: &mut Program) {
+    fn perform(&self, mut program: Program){
         match self.instruction.as_str() {
-            "ptl" => Self::ptl(self, program),
-            "pt" => Self::pt(self, program),
-            "sav" => { newVar(&self.opperhand[0], &self.opperhand[1], program) }
-            "set" => { set(&self.opperhand[0], &self.opperhand[1], program) }
-            "mov" => { mov(&self.opperhand[0], &self.opperhand[1], program) }
+            "ptl" => Self::ptl(self, &program),
+            "pt" => Self::pt(self, &program),
+            "sav" => { program.newVar(&self.opperhand[0], &self.opperhand[1]) }
+            "set" => { program.set(&self.opperhand[0], &self.opperhand[1]) }
+            "mov" => { program.mov(&self.opperhand[0], &self.opperhand[1]) }
             "jmp" => {
-                match &self.opperhand[0].parse::<u64>() {
+                match &self.opperhand[0].parse::<i64>() {
                     Ok(number) => {
                         program.jmp(*number)
                     }
                     Err(e) => {
-                        panic!("NOT A NUMBER!!!")
+                        panic!("{}", e.to_string())
                     }
                 }
             }
-            "usi"=>{usi(self.opperhand[0].to_string(),program)},
-            "rnd"=>{rnd(self.opperhand[0].to_string(),self.opperhand[1].parse::<i64>().expect("NOT A NUMBER"),self.opperhand[2].parse::<i64>().expect("NOT A NUMBER"),program)},
-            "add"=>{add(self.opperhand[0].to_string(),self.opperhand[1].to_string(),program)},
-            "sub"=>{sub(self.opperhand[0].to_string(),self.opperhand[1].to_string(),program)},
-            "dif"=>{dif(self.opperhand[0].to_string(), self.opperhand[1].to_string(), self.opperhand[2].to_string(), self.opperhand[3].to_string().parse::<u64>().expect("NOT A NUMBER"), program) },
+            "usi"=>{program.usi(self.opperhand[0].to_string())},
+            "rnd"=>{program.rnd(self.opperhand[0].to_string(),self.opperhand[1].parse::<i64>().expect("rnd NOT A NUMBER"),self.opperhand[2].parse::<i64>().expect("rnd NOT A NUMBER"))},
+            "add"=>{program.add(self.opperhand[0].to_string(),self.opperhand[1].to_string())},
+            "sub"=>{program.sub(self.opperhand[0].to_string(), self.opperhand[1].to_string())},
+            "dif"=>{program.dif(self.opperhand[0].to_string(), self.opperhand[1].to_string(), self.opperhand[2].to_string(), self.opperhand[3].to_string().parse::<i64>().expect("dif NOT A NUMBER")) },
             "end"=>{end(program)},
             _=>{
                 println!("error:invalid instruction");

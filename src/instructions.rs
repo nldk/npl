@@ -1,39 +1,50 @@
 use std::io;
+use rand::Rng;
 use crate::{Line, Program, Var};
 
-pub fn end(mut p: &mut Program){
+pub fn end(mut p: Program){
     p.end = true
 }
-pub fn set( nameTF: &String, valueTS: &String, mut p: &mut Program) {
-    for mut i in &mut p.vars {
-        if &i.name == nameTF {
-            i.value = valueTS.to_string();
-            return;
+impl Program{
+    pub fn set( mut self,nameTF: &String, valueTS: &String,) {
+        for mut i in &mut self.vars {
+            if &i.name == nameTF {
+                i.value = valueTS.to_string();
+                return;
+            }
         }
+        //panic!("variable not found at line {}. maybe you didn't declare the variable",p.pp)
     }
-    //panic!("variable not found at line {}. maybe you didnt declare the variable",p.pp)
-}
-pub fn get( nameTF: &String, mut p: &Program) -> String {
-    let mut value = String::new();
-    for mut i in &p.vars {
-        if i.name == nameTF.to_string() {
-            value = i.value.to_string();
-            break;
+    pub fn get( self,nameTF: &String) -> String {
+        let mut value = String::new();
+        
+        for mut i in &self.vars {
+            println!("{}",self.debug);
+            if self.debug{
+                println!("var{}:{}",i.name,i.value);
+            }
+            if i.name == nameTF.to_string() {
+                value = i.value.to_string();
+                break;
+            }
         }
+        if value=="".to_string(){
+            panic!("variable not found at line {}. maybe you didnt declare the variable",self.pp+1)
+        }
+        return value;
     }
-    if value=="".to_string(){
-        panic!("variable not found at line {}. maybe you didnt declare the variable",p.pp)
+    pub fn mov(self,nameTF1: &String,nameTF2: &String) {
+        let ntf = self.clone().get(nameTF2);
+        self.set(nameTF1,&ntf);
     }
-    return value;
 }
-pub fn mov(nameTF1: &String,nameTF2: &String, mut p: &mut Program) {
-    set(nameTF1, &get(nameTF2, p), p);
-}
+
+
 impl Line {
     pub fn ptl(line: &Line,program: &Program) {
         if line.opperhand.len() == 2 {
             if line.opperhand[1] == "?" {
-                println!("{}",get(&line.opperhand[0],program));
+                println!("{}",program.clone().get(&line.opperhand[0]));
             }
         }else {
             println!("{}", line.opperhand[0])
@@ -42,60 +53,68 @@ impl Line {
     pub fn pt(line: &Line,program: &Program) {
         if line.opperhand.len() == 2 {
             if line.opperhand[1] == "?" {
-                print!("{}",get(&line.opperhand[0],program));
+                print!("{}",program.clone().get(&line.opperhand[0]));
             }
         }else {
             print!("{}", line.opperhand[0])
         }
     }
 }
-pub fn usi(varTS:String,mut p: &mut Program){
-    let mut input = String::new();
-    io::stdin().read_line(&mut input).unwrap();
-    let inputTrimd = input.trim();
-    set(&varTS, &inputTrimd.to_string(), &mut p);
-}
-use rand::Rng;
-pub fn rnd(varTS:String,begin:i64,end:i64,p: &mut Program){
-    let mut rng = rand::thread_rng();
-    set(&varTS,&rng.gen_range(begin..end).to_string(),p);
-}
-pub fn dif(conl:String,op:String,conr:String,tj:u64, p:&mut Program){
-    match op.as_str() {
-        "=="=>{if get(&conr,&p) != get(&conl,&p){
-            p.jmp(tj);
-        }},
-        "!="=>{if get(&conr,&p) == get(&conl,&p){
-            p.jmp(tj);
-        }},
-        "<"=>{
-            let conln = get(&conl,&p).parse::<i64>().expect("NOT A NUMBER");
-            let conrn = get(&conr,&p).parse::<i64>().expect("NOT A NUMBER");
-            if  !(conln < conrn) {
-                p.jmp(tj);
+impl Program {
+    pub fn usi(self,varTS:String){
+        let mut input = String::new();
+        io::stdin().read_line(&mut input).unwrap();
+        let inputTrimd = input.trim();
+        self.set(&varTS, &inputTrimd.to_string());
+    }
+    
+    pub fn rnd(self,varTS:String,begin:i64,end:i64){
+        let mut rng = rand::thread_rng();
+        self.set(&varTS,&rng.gen_range(begin..end).to_string());
+    }
+    pub fn dif(mut self,conl:String,op:String,conr:String,tj:i64,){
+        match op.as_str() {
+            "=="=>{if self.clone().get(&conr) != self.clone().get(&conl){
+                self.jmp(tj);
             }},
-        ">"=>{
-            let conln = get(&conl,&p).parse::<i64>().expect("NOT A NUMBER");
-            let conrn = get(&conr,&p).parse::<i64>().expect("NOT A NUMBER");
-            if !(conln > conrn)  {
-            p.jmp(tj);
-        }},
-        _ => {}
+            "!="=>{if self.clone().get(&conr) == self.clone().get(&conl){
+                self.jmp(tj);
+            }},
+            "<"=>{
+                let conln = self.clone().get(&conl).parse::<i64>().expect("NOT A NUMBER");
+                let conrn = self.clone().get(&conr).parse::<i64>().expect("NOT A NUMBER");
+                if  !(conln < conrn) {
+                    self.jmp(tj);
+                }},
+            ">"=>{
+                let conln = self.clone().get(&conl).parse::<i64>().expect("NOT A NUMBER");
+                let conrn = self.clone().get(&conr).parse::<i64>().expect("NOT A NUMBER");
+                if !(conln > conrn)  {
+                    self.jmp(tj);
+                }},
+            _ => {}
+        }
+    }
+    pub fn add(self,varTS:String,valTA:String,){
+        let valueTA = valTA.parse::<i64>().expect("NOT A NUMBER");
+        let valueO = self.clone().get(&varTS).parse::<i64>().expect("NOT A NUMBER");
+        self.set(&varTS,&(valueTA+valueO).to_string())
+    }
+    pub fn sub(self,varTS:String,valTS:String){
+        let valueTS = valTS.parse::<i64>().expect("NOT A NUMBER");
+        let valueO = self.clone().get(&varTS,).parse::<i64>().expect("NOT A NUMBER");
+        self.set(&varTS,&(valueO-valueTS).to_string())
     }
 }
-pub fn add(varTS:String,valTA:String,  p:&mut Program){
-    let valueTA = valTA.parse::<i64>().expect("NOT A NUMBER");
-    let valueO = get(&varTS,&p).parse::<i64>().expect("NOT A NUMBER");
-    set(&varTS,&(valueTA+valueO).to_string(),p)
-}
-pub fn sub(varTS:String,valTS:String, p:&mut Program){
-    let valueTS = valTS.parse::<i64>().expect("NOT A NUMBER");
-    let valueO = get(&varTS,&p).parse::<i64>().expect("NOT A NUMBER");
-    set(&varTS,&(valueO-valueTS).to_string(),p)
-}
+
 impl Program{
-    pub fn jmp(&mut self, place:u64){
-        let placetojmp = self.pp + place;
-        self.pp = placetojmp;
+    pub fn jmp(&mut self, place:i64){
+        let placetojmp = self.pp as i64 + place;
+        if self.lines.len()>(placetojmp-1) as usize{
+            self.pp = placetojmp as u64;
+        }else { 
+            panic!("cannot jump to {placetojmp}");
+        }
+        
     }
 }
