@@ -10,6 +10,8 @@ jmp 4;
 dif input,<,rand,13;
 ptl bigger;
 jmp 4;
-dif input,==,rand,4;
+dif input,==,rand,16;
 ptl good;
 jmp 2;
+dif input,==,stop,17;
+end

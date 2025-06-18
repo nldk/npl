@@ -1,0 +1,6 @@
+sav t,2;
+sav f,3;
+dif t,>,f,6;
+ptl good;
+jmp 6;
+ptl bad;

@@ -1,7 +1,9 @@
 use std::io;
 use crate::{Line, Program, Var};
 
-
+pub fn end(mut p: &mut Program){
+    p.end = true
+}
 pub fn set( nameTF: &String, valueTS: &String, mut p: &mut Program) {
     for mut i in &mut p.vars {
         if &i.name == nameTF {
@@ -58,25 +60,25 @@ pub fn rnd(varTS:String,begin:i64,end:i64,p: &mut Program){
     let mut rng = rand::thread_rng();
     set(&varTS,&rng.gen_range(begin..end).to_string(),p);
 }
-pub fn dif(conr:String,op:String,conl:String,tj:u64, p:&mut Program){
+pub fn dif(conl:String,op:String,conr:String,tj:u64, p:&mut Program){
     match op.as_str() {
         "=="=>{if get(&conr,&p) != get(&conl,&p){
-            p.pp = tj-1;
+            p.jmp(tj);
         }},
         "!="=>{if get(&conr,&p) == get(&conl,&p){
-            p.pp = tj -1;
+            p.jmp(tj);
         }},
         "<"=>{
             let conln = get(&conl,&p).parse::<i64>().expect("NOT A NUMBER");
             let conrn = get(&conr,&p).parse::<i64>().expect("NOT A NUMBER");
-            if conrn > conln {
-                p.pp = tj-1;
+            if  !(conln < conrn) {
+                p.jmp(tj);
             }},
         ">"=>{
             let conln = get(&conl,&p).parse::<i64>().expect("NOT A NUMBER");
             let conrn = get(&conr,&p).parse::<i64>().expect("NOT A NUMBER");
-            if conrn < conln {
-            p.pp = tj-1;
+            if !(conln > conrn)  {
+            p.jmp(tj);
         }},
         _ => {}
     }
@@ -93,6 +95,7 @@ pub fn sub(varTS:String,valTS:String, p:&mut Program){
 }
 impl Program{
     pub fn jmp(&mut self, place:u64){
-        self.pp = place-1;
+        let placetojmp = self.pp + place;
+        self.pp = placetojmp;
     }
 }

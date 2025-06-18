@@ -2,7 +2,7 @@ use std::fs::File;
 use std::{env, io};
 use std::io::Read;
 use std::path::Path;
-use crate::instructions::{add, dif, mov, rnd, set, sub, usi};
+use crate::instructions::{add, dif, end, mov, rnd, set, sub, usi};
 
 mod instructions;
 
@@ -15,11 +15,12 @@ fn execute() {
         pp: 0,
         lines: Vec::new(),
         vars: Vec::new(),
+        end: false,
     };
     let file = rfile();
     let mut begin = true;
     parch(file, &mut program);
-    while program.pp < (program.lines.len() - 1) as u64 {
+    while program.pp < (program.lines.len() - 1) as u64 && !program.end{
         if !begin {
             program.pp += 1;
         }
@@ -79,6 +80,7 @@ struct Program {
     pp: u64,
     lines: Vec<Line>,
     vars: Vec<Var>,
+    end: bool,
 }
 
 struct Var {
@@ -93,6 +95,12 @@ struct Line {
 }
 
 fn newVar(nameN: &String, valueN: &String, p: &mut Program) {
+    for i in &mut p.vars {
+        if &i.name == nameN {
+            set(nameN,valueN,p);
+            return;
+        }
+    }
     p.vars.push(
         Var {
             name: nameN.to_string(),
@@ -123,7 +131,8 @@ impl Line {
             "rnd"=>{rnd(self.opperhand[0].to_string(),self.opperhand[1].parse::<i64>().expect("NOT A NUMBER"),self.opperhand[2].parse::<i64>().expect("NOT A NUMBER"),program)},
             "add"=>{add(self.opperhand[0].to_string(),self.opperhand[1].to_string(),program)},
             "sub"=>{sub(self.opperhand[0].to_string(),self.opperhand[1].to_string(),program)},
-            "dif"=>{dif(self.opperhand[0].to_string(), self.opperhand[1].to_string(), self.opperhand[2].to_string(), self.opperhand[3].to_string().parse::<u64>().expect("NOT A NUMBER"), program) }
+            "dif"=>{dif(self.opperhand[0].to_string(), self.opperhand[1].to_string(), self.opperhand[2].to_string(), self.opperhand[3].to_string().parse::<u64>().expect("NOT A NUMBER"), program) },
+            "end"=>{end(program)},
             _=>{
                 println!("error:invalid instruction");
                 panic!("e:{}", self.instruction)
