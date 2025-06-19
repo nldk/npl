@@ -29,15 +29,16 @@ fn execute() {
     }
     program.debug=debug;
     program = parch(file, &program,debug);
-    while program.pp < (program.lines.len() - 1) as u64 && !program.end{
+    let mut p:Program =program.clone();
+    while p.pp < (p.lines.len() - 1) as u64 && !p.end{
         if !begin {
-            program.pp += 1;
+            p.pp += 1;
         }
         let mut line = Line {
-            instruction: program.lines[program.pp as usize].instruction.clone(),
-            opperhand: program.lines[program.pp as usize].opperhand.clone(),
+            instruction: p.lines[p.pp as usize].instruction.clone(),
+            opperhand: p.lines[p.pp as usize].opperhand.clone(),
         };
-        line.perform(program.clone());
+        p = line.perform(p);
         begin = false;
     }
 }
@@ -110,11 +111,12 @@ struct Line {
     opperhand: Vec<String>,
 }
 impl Program {
-    fn newVar(mut self, nameN: &String, valueN: &String,) {
+    fn newVar(mut self, nameN: &String, valueN: &String,)-> Program {
+        
         for i in &mut self.vars {
             if &i.name == nameN {
-                self.set(nameN,valueN);
-                return;
+                let pS = self.set(nameN,valueN);
+                return pS;
             }
         }
         self.vars.push(
@@ -123,19 +125,25 @@ impl Program {
                 value: valueN.to_string(),
             }
         );
+        if self.debug{
+            println!("\nDEBUG {},N{},V{}",self.vars.len(),nameN,valueN);
+        }
+        return self;
+        
     }
 }
 
 
 impl Line {
-    fn perform(&self, mut program: Program){
+    fn perform(&self, mut program: Program)->Program {
+        let mut programTR = program.clone();
         match self.instruction.as_str() {
             "ptl" => Self::ptl(self, &program),
             "pt" => Self::pt(self, &program),
-            "sav" => { program.newVar(&self.opperhand[0], &self.opperhand[1]) }
-            "set" => { program.set(&self.opperhand[0], &self.opperhand[1]) }
-            "mov" => { program.mov(&self.opperhand[0], &self.opperhand[1]) }
-            "jmp" => {
+            "sav" => { programTR = program.newVar(&self.opperhand[0], &self.opperhand[1]) },
+            "set" => { programTR = program.set(&self.opperhand[0], &self.opperhand[1]) },
+            "mov" => {  programTR =program.mov(&self.opperhand[0], &self.opperhand[1]) },
+            "jmp" => { programTR =
                 match &self.opperhand[0].parse::<i64>() {
                     Ok(number) => {
                         program.jmp(*number)
@@ -145,16 +153,17 @@ impl Line {
                     }
                 }
             }
-            "usi"=>{program.usi(self.opperhand[0].to_string())},
-            "rnd"=>{program.rnd(self.opperhand[0].to_string(),self.opperhand[1].parse::<i64>().expect("rnd NOT A NUMBER"),self.opperhand[2].parse::<i64>().expect("rnd NOT A NUMBER"))},
-            "add"=>{program.add(self.opperhand[0].to_string(),self.opperhand[1].to_string())},
-            "sub"=>{program.sub(self.opperhand[0].to_string(), self.opperhand[1].to_string())},
-            "dif"=>{program.dif(self.opperhand[0].to_string(), self.opperhand[1].to_string(), self.opperhand[2].to_string(), self.opperhand[3].to_string().parse::<i64>().expect("dif NOT A NUMBER")) },
+            "usi"=>{programTR = program.usi(self.opperhand[0].to_string())},
+            "rnd"=>{ programTR =program.rnd(self.opperhand[0].to_string(),self.opperhand[1].parse::<i64>().expect("rnd NOT A NUMBER"),self.opperhand[2].parse::<i64>().expect("rnd NOT A NUMBER"))},
+            "add"=>{programTR =program.add(self.opperhand[0].to_string(),self.opperhand[1].to_string())},
+            "sub"=>{programTR =program.sub(self.opperhand[0].to_string(), self.opperhand[1].to_string())},
+            "dif"=>{ programTR =program.dif(self.opperhand[0].to_string(), self.opperhand[1].to_string(), self.opperhand[2].to_string(), self.opperhand[3].to_string().parse::<i64>().expect("dif NOT A NUMBER")) },
             "end"=>{end(program)},
             _=>{
                 println!("error:invalid instruction");
                 panic!("e:{}", self.instruction)
             }
         };
+        return programTR;
     }
 }

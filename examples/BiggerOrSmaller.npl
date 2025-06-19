@@ -3,7 +3,8 @@ rnd rand,0,100;
 ptl rand,?;
 ptl guess the number;
 sav input,0;
-usi input;
+usi input;dif input,==,stop,2;
+end
 dif input,>,rand,3;
 ptl smaller;
 jmp -3;
@@ -13,5 +14,3 @@ jmp -3;
 dif input,==,rand,3;
 ptl good;
 jmp -3;
-dif input,==,stop,1;
-end
