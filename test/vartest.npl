@@ -1,0 +1,6 @@
+sav test1,0;
+ptl test1,?;
+sav test2,5;
+add test1,10;
+ptl test1,?;
+ptl test2,?;
