@@ -2,6 +2,7 @@ use std::fs::File;
 use std::{env, io};
 use std::io::Read;
 use std::path::Path;
+use libloading::{Library, Symbol};
 use crate::instructions::{end};
 
 mod instructions;
@@ -17,6 +18,7 @@ fn execute() {
         vars: Vec::new(),
         end: false,
         debug: false,
+        libs: Vec::new(),
     };
     let file = rfile();
     let mut begin = true;
@@ -89,16 +91,17 @@ fn parch(file: String, program: &Program,debug:bool)->Program {
     p.lines = parchetFile;
     return p;
 }
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 struct Program {
     pp: u64,
     lines: Vec<Line>,
     vars: Vec<Var>,
     end: bool,
     debug: bool,
+    libs: Vec<Lib>,
 }
 
-#[derive(Clone)]
+#[derive(Clone,Debug)]
 struct Var {
     name: String,
     value: String,
@@ -109,6 +112,11 @@ struct Var {
 struct Line {
     instruction: String,
     opperhand: Vec<String>,
+}
+#[derive(Clone,Debug)]
+struct Lib{
+    path: String,
+    func:Vec<String>,
 }
 impl Program {
     fn newVar(mut self, nameN: &String, valueN: &String,)-> Program {
@@ -159,9 +167,55 @@ impl Line {
             "sub"=>{programTR =program.sub(self.opperhand[0].to_string(), self.opperhand[1].to_string())},
             "dif"=>{ programTR =program.dif(self.opperhand[0].to_string(), self.opperhand[1].to_string(), self.opperhand[2].to_string(), self.opperhand[3].to_string().parse::<i64>().expect("dif NOT A NUMBER")) },
             "end"=>{end(program)},
+            "init"=>{
+                let path = self.opperhand[0].clone();
+                let fullPath:String = "./".to_string()+path.as_str();
+                if program.debug{
+                    println!("path{}",fullPath);
+                }
+                unsafe {
+                    let lib = Library::new(fullPath).unwrap();
+                    let func: Symbol<unsafe extern fn()->Vec<String>> = lib.get(b"getFuncs").unwrap();
+                    let funcs = func();
+                    program.libs.push(
+                        Lib{
+                            path:path,
+                            func: funcs,
+                        }
+                    )
+                }
+                programTR = program
+            }
             _=>{
-                println!("error:invalid instruction");
-                panic!("e:{}", self.instruction)
+                let mut skip = false;
+                for i in program.clone().libs{
+                    if program.debug{
+                        println!("Libs{:?}",i.func)
+                    }
+                    for name in i.func{
+                        if program.debug{
+                            println!("Libs:{},ins:{}",name,name.to_string() == self.instruction.to_string())
+                        }
+                        if name.to_string() == self.instruction.to_string() {
+                            unsafe {
+                                let lib = Library::new("./".to_string()+i.path.to_string().as_str()).unwrap();
+                                let func: Symbol<unsafe extern fn(Program,Vec<String>)->Program> = lib.get(self.instruction.as_bytes()).unwrap();
+                                let returnValue = func(program.clone(),self.opperhand.clone());
+                                if program.debug{
+                                    println!("{:?}",returnValue);
+                                }
+                                skip =true;
+                                return returnValue;
+                            }
+                        }
+                    }
+                    
+                }
+                if !skip {
+                    println!("error:invalid instruction");
+                    panic!("e:{}", self.instruction)
+                }
+                
             }
         };
         return programTR;
