@@ -64,7 +64,7 @@ fn parch(file: String, program: &Program,debug:bool)->Program {
     for i in parchFile {
         let (first_part, second_part) = i.split_once(' ').unwrap();
         let contentOld: Vec<String> = vec![first_part.parse().unwrap(), second_part.parse().unwrap()];
-        let content = contentOld[0].trim_start_matches('\n');
+        let content = contentOld[0].trim_start_matches( '\n');
         let instructionP = content.to_string();
         let mut opperhand = String::new();
         for y in contentOld[1].chars() {
@@ -169,17 +169,17 @@ impl Line {
             "end"=>{end(program)},
             "init"=>{
                 let path = self.opperhand[0].clone();
-                let fullPath:String = "./".to_string()+path.as_str()+".so";
+                let fullPath:String = "/usr/npl/".to_string()+path.as_str()+".so";
                 if program.debug{
                     println!("path{}",fullPath);
                 }
                 unsafe {
-                    let lib = Library::new(fullPath).unwrap();
+                    let lib = Library::new(fullPath.clone()).unwrap();
                     let func: Symbol<unsafe extern fn()->Vec<String>> = lib.get(b"getFuncs").unwrap();
                     let funcs = func();
                     program.libs.push(
                         Lib{
-                            path:path,
+                            path:fullPath,
                             func: funcs,
                         }
                     )
@@ -198,7 +198,7 @@ impl Line {
                         }
                         if name.to_string() == self.instruction.to_string() {
                             unsafe {
-                                let lib = Library::new("./".to_string()+i.path.to_string().as_str()+".so").unwrap();
+                                let lib = Library::new(i.path.as_str()).unwrap();
                                 let func: Symbol<unsafe extern fn(Program,Vec<String>)->Program> = lib.get(self.instruction.as_bytes()).unwrap();
                                 let returnValue = func(program.clone(),self.opperhand.clone());
                                 if program.debug{
@@ -214,6 +214,7 @@ impl Line {
                 if !skip {
                     println!("error:invalid instruction");
                     panic!("e:{}", self.instruction)
+                    
                 }
                 
             }

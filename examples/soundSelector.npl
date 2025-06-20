@@ -1,4 +1,4 @@
-init stl/io/libio;
+init std/io;
 sav music,0;
 sav rick,rick;
 sav som,something;

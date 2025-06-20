@@ -1,2 +1,2 @@
-init stl/io/libio;
+init stl/io/io;
 ps sounds/SOMTHING.mp3;
