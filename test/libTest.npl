@@ -1,2 +1,2 @@
-init stl/io/print.so;
-print hallo;
+init stl/io/libio;
+ps sounds/SOMTHING.mp3;

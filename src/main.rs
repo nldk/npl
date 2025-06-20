@@ -169,7 +169,7 @@ impl Line {
             "end"=>{end(program)},
             "init"=>{
                 let path = self.opperhand[0].clone();
-                let fullPath:String = "./".to_string()+path.as_str();
+                let fullPath:String = "./".to_string()+path.as_str()+".so";
                 if program.debug{
                     println!("path{}",fullPath);
                 }
@@ -198,7 +198,7 @@ impl Line {
                         }
                         if name.to_string() == self.instruction.to_string() {
                             unsafe {
-                                let lib = Library::new("./".to_string()+i.path.to_string().as_str()).unwrap();
+                                let lib = Library::new("./".to_string()+i.path.to_string().as_str()+".so").unwrap();
                                 let func: Symbol<unsafe extern fn(Program,Vec<String>)->Program> = lib.get(self.instruction.as_bytes()).unwrap();
                                 let returnValue = func(program.clone(),self.opperhand.clone());
                                 if program.debug{
