@@ -1,0 +1,16 @@
+init std/io;
+sav music,0;
+sav rick,rick;
+sav som,something;
+ptl Kies een nummer;
+usi music;
+pt je koos ;
+ptl music,?;
+dif music,==,rick,4;
+ps sounds/rick.mp3;
+set music,0;
+jmp -3;
+dif music,==,som,3;
+ps sounds/SOMTHING.mp3;
+set music,0;
+jmp -3;

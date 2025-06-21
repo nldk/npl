@@ -1,4 +1,5 @@
 use std::io;
+use libloading::{Library, Symbol};
 use rand::Rng;
 use crate::{Line, Program, Var};
 
