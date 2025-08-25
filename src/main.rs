@@ -38,7 +38,7 @@ fn execute() {
         }
         let mut line = Line {
             instruction: p.lines[p.pp as usize].instruction.clone(),
-            opperhand: p.lines[p.pp as usize].opperhand.clone(),
+            arguments: p.lines[p.pp as usize].arguments.clone(),
         };
         p = line.perform(p);
         begin = false;
@@ -66,21 +66,22 @@ fn parch(file: String, program: &Program,debug:bool)->Program {
         let contentOld: Vec<String> = vec![first_part.parse().unwrap(), second_part.parse().unwrap()];
         let content = contentOld[0].trim_start_matches( '\n');
         let instructionP = content.to_string();
-        let mut opperhand = String::new();
-        for y in contentOld[1].chars() {
+        let mut argument = String::new();
+        
+        for y in contentOld[1].clone().chars() {
             match y {
                 '"' => {}
-                _ => { opperhand += &*y.to_string(); }
+                _ => { argument += &*y.to_string(); }
             }
         }
-        let opperhandV: Vec<&str> = opperhand.split(',').collect();
-        let mut opperhandP: Vec<String> = Vec::new();
-        for y in opperhandV {
-            opperhandP.push(y.to_string());
+        let argumentsV: Vec<&str> = argument.split(',').collect();
+        let mut argumentsP: Vec<String> = Vec::new();
+        for y in argumentsV {
+            argumentsP.push(y.to_string());
         }
         let line = Line {
             instruction: instructionP,
-            opperhand: opperhandP,
+            arguments: argumentsP,
         };
         parchetFile.push(line);
     }
@@ -111,7 +112,7 @@ struct Var {
 #[derive(Clone)]
 struct Line {
     instruction: String,
-    opperhand: Vec<String>,
+    arguments: Vec<String>,
 }
 #[derive(Clone,Debug)]
 struct Lib{
@@ -148,11 +149,11 @@ impl Line {
         match self.instruction.as_str() {
             "ptl" => Self::ptl(self, &program),
             "pt" => Self::pt(self, &program),
-            "sav" => { programTR = program.newVar(&self.opperhand[0], &self.opperhand[1]) },
-            "set" => { programTR = program.set(&self.opperhand[0], &self.opperhand[1]) },
-            "mov" => {  programTR =program.mov(&self.opperhand[0], &self.opperhand[1]) },
+            "sav" => { programTR = program.newVar(&self.arguments[0], &self.arguments[1]) },
+            "set" => { programTR = program.set(&self.arguments[0], &self.arguments[1]) },
+            "mov" => {  programTR =program.mov(&self.arguments[0], &self.arguments[1]) },
             "jmp" => { programTR =
-                match &self.opperhand[0].parse::<i64>() {
+                match &self.arguments[0].parse::<i64>() {
                     Ok(number) => {
                         program.jmp(*number)
                     }
@@ -161,14 +162,14 @@ impl Line {
                     }
                 }
             }
-            "usi"=>{programTR = program.usi(self.opperhand[0].to_string())},
-            "rnd"=>{ programTR =program.rnd(self.opperhand[0].to_string(),self.opperhand[1].parse::<i64>().expect("rnd NOT A NUMBER"),self.opperhand[2].parse::<i64>().expect("rnd NOT A NUMBER"))},
-            "add"=>{programTR =program.add(self.opperhand[0].to_string(),self.opperhand[1].to_string())},
-            "sub"=>{programTR =program.sub(self.opperhand[0].to_string(), self.opperhand[1].to_string())},
-            "dif"=>{ programTR =program.dif(self.opperhand[0].to_string(), self.opperhand[1].to_string(), self.opperhand[2].to_string(), self.opperhand[3].to_string().parse::<i64>().expect("dif NOT A NUMBER")) },
+            "usi"=>{programTR = program.usi(self.arguments[0].to_string())},
+            "rnd"=>{ programTR =program.rnd(self.arguments[0].to_string(), self.arguments[1].parse::<i64>().expect("rnd NOT A NUMBER"), self.arguments[2].parse::<i64>().expect("rnd NOT A NUMBER"))},
+            "add"=>{programTR =program.add(self.arguments[0].to_string(), self.arguments[1].to_string())},
+            "sub"=>{programTR =program.sub(self.arguments[0].to_string(), self.arguments[1].to_string())},
+            "dif"=>{ programTR =program.dif(self.arguments[0].to_string(), self.arguments[1].to_string(), self.arguments[2].to_string(), self.arguments[3].to_string().parse::<i64>().expect("dif NOT A NUMBER")) },
             "end"=>{end(program)},
             "init"=>{
-                let path = self.opperhand[0].clone();
+                let path = self.arguments[0].clone();
                 let fullPath:String = "/usr/npl/".to_string()+path.as_str()+".so";
                 if program.debug{
                     println!("path{}",fullPath);
@@ -200,7 +201,7 @@ impl Line {
                             unsafe {
                                 let lib = Library::new(i.path.as_str()).unwrap();
                                 let func: Symbol<unsafe extern fn(Program,Vec<String>)->Program> = lib.get(self.instruction.as_bytes()).unwrap();
-                                let returnValue = func(program.clone(),self.opperhand.clone());
+                                let returnValue = func(program.clone(),self.arguments.clone());
                                 if program.debug{
                                     println!("{:?}",returnValue);
                                 }

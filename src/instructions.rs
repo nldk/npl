@@ -48,21 +48,21 @@ impl Program{
 
 impl Line {
     pub fn ptl(line: &Line,program: &Program) {
-        if line.opperhand.len() == 2 {
-            if line.opperhand[1] == "?" {
-                println!("{}",program.clone().get(&line.opperhand[0]));
+        if line.arguments.len() == 2 {
+            if line.arguments[1] == "?" {
+                println!("{}",program.clone().get(&line.arguments[0]));
             }
         }else {
-            println!("{}", line.opperhand[0])
+            println!("{}", line.arguments[0])
         }
     }
     pub fn pt(line: &Line,program: &Program) {
-        if line.opperhand.len() == 2 {
-            if line.opperhand[1] == "?" {
-                print!("{}",program.clone().get(&line.opperhand[0]));
+        if line.arguments.len() == 2 {
+            if line.arguments[1] == "?" {
+                print!("{}",program.clone().get(&line.arguments[0]));
             }
         }else {
-            print!("{}", line.opperhand[0])
+            print!("{}", line.arguments[0])
         }
     }
 }
