@@ -4,8 +4,10 @@ use std::io::Read;
 use std::path::Path;
 use libloading::{Library, Symbol};
 use crate::instructions::{end};
+use crate::parcher::parch;
 
 mod instructions;
+mod parcher;
 
 fn main() {
     execute();
@@ -30,7 +32,7 @@ fn execute() {
         debug = debugS == "-d";
     }
     program.debug=debug;
-    program = parch(file, &program,debug);
+    program = parch(file, &mut program, debug);
     let mut p:Program =program.clone();
     while p.pp < (p.lines.len() - 1) as u64 && !p.end{
         if !begin {
@@ -55,7 +57,7 @@ fn rfile() -> String {
     data_file.read_to_string(&mut file_content).unwrap();
     return file_content;
 }
-
+/*
 fn parch(file: String, program: &Program,debug:bool)->Program {
     let splitedFile = file.trim().split(';');
     let mut parchFile: Vec<&str> = splitedFile.collect();
@@ -67,7 +69,7 @@ fn parch(file: String, program: &Program,debug:bool)->Program {
         let content = contentOld[0].trim_start_matches( '\n');
         let instructionP = content.to_string();
         let mut argument = String::new();
-        
+
         for y in contentOld[1].clone().chars() {
             match y {
                 '"' => {}
@@ -92,6 +94,7 @@ fn parch(file: String, program: &Program,debug:bool)->Program {
     p.lines = parchetFile;
     return p;
 }
+ */
 #[derive(Clone, Debug)]
 struct Program {
     pp: u64,

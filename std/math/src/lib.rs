@@ -82,16 +82,16 @@ pub extern "C" fn pow(p:Program, arguments:Vec<String>) ->Program{
     program = program.set(&arguments[2], &grondtal.pow(exponent as u32).to_string());
     return program;
 }
-pub extern "C" fn sqrt(p:Program,arguments:Vec<String>)->Program{
+pub extern "C" fn sqrt(p:Program,opperhand:Vec<String>)->Program{
     let mut program = p;
-    let grondtal = match arguments[0].parse(){
+    let grondtal = match opperhand[0].parse(){
         Ok(i) => i,
         Err(e) => {
             if program.debug {
-                println!("Errorg{:?},Num{},return{}",e,arguments[0],program.clone().get(&arguments[0]))
+                println!("Errorg{:?},Num{},return{}",e,opperhand[0],program.clone().get(&opperhand[0]))
             }
-            program.clone().get(&arguments[0]).parse::<i64>().unwrap()}
+            program.clone().get(&opperhand[0]).parse::<i64>().unwrap()}
     };
-    program = program.set(&arguments[2],&grondtal.sqrt().to_string());
+    program = program.set(&opperhand[2],&grondtal.sqrt().to_string());
     return program;
 }
