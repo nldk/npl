@@ -1,0 +1,1 @@
+/home/niel/RustroverProjects/npl/librairyTemplate/target/debug/liblibrairyTemplate.so: /home/niel/RustroverProjects/npl/librairyTemplate/src/lib.rs /home/niel/RustroverProjects/npl/librairyTemplate/src/librairy.rs

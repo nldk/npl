@@ -190,6 +190,7 @@ impl Line {
                 }
                 programTR = program
             }
+            "exit"=>{programTR.end = true;},
             _=>{
                 let mut skip = false;
                 for i in program.clone().libs{
@@ -223,6 +224,6 @@ impl Line {
                 
             }
         };
-        return programTR;
+        programTR
     }
 }

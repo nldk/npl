@@ -2,5 +2,5 @@ init std/math/libmath
 init std/io/io
 sav gr,5
 sav re,0
-pow 3,5,re
+pow gr,5,re
 ptl re,?
