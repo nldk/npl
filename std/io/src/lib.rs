@@ -22,7 +22,7 @@ struct Var {
 #[derive(Clone)]
 struct Line {
     instruction: String,
-    opperhand: Vec<String>,
+    arguments: Vec<String>,
 }
 #[derive(Clone)]
 struct Lib{
@@ -68,8 +68,8 @@ pub extern "C" fn getFuncs()->Vec<String>{
 }
 
 #[unsafe(no_mangle)]
-pub extern "C" fn ps(p:Program,opperhand:Vec<String>)->Program{
-    let path = opperhand[0].as_str();
+pub extern "C" fn ps(p:Program,arguments:Vec<String>)->Program{
+    let path = arguments[0].as_str();
     if p.debug {
         println!("{}",path);
     }
